@@ -23,8 +23,8 @@
 #error [NOT_SUPPORTED] this test is supported on GCC only
 #endif
 
-#if defined(TARGET_FUTURE_SEQUANA_PSA)
-#error [NOT_SUPPORTED] Disable this Test until FUTURE_SEQUANA_PSA enables Memory protection
+#if defined(TARGET_FUTURE_SEQUANA_PSA) || defined(TARGET_CY8CKIT_062_WIFI_BT_PSA)
+#error [NOT_SUPPORTED] Disable this Test until FUTURE_SEQUANA_PSA and CY8CKIT_062_WIFI_BT_PSA enable Memory protection
 #endif
 
 #include "utest/utest.h"
