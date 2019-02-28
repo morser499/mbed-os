@@ -1,0 +1,3 @@
+#define NVRAM_GENERATED_MAC_ADDRESS        "macaddr=02:0A:F7:11:b6:19"
+#define DCT_GENERATED_MAC_ADDRESS          "\x02\x0A\xF7\x19\x11\xb6"
+#define DCT_GENERATED_ETHERNET_MAC_ADDRESS "\x02\x0A\xF7\x19\x11\xb7"
