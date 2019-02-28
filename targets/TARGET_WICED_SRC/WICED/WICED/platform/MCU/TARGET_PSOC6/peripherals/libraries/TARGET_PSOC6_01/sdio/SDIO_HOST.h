@@ -234,6 +234,18 @@ typedef struct stc_sdio_cmd
 
 }stc_sdio_cmd_t;
 
+/**
+* \brief structure used restore non retained UDB registers
+*/
+typedef struct
+{
+    uint32_t CY_SDIO_UDB_WRKMULT_CTL_0;
+    uint32_t CY_SDIO_UDB_WRKMULT_CTL_1;
+    uint32_t CY_SDIO_UDB_WRKMULT_CTL_2;
+    uint32_t CY_SDIO_UDB_WRKMULT_CTL_3;
+
+} stc_sdio_backup_regs_t;
+
 /** \} group_sdio_data_structures */
 
 /***************************************
@@ -256,6 +268,10 @@ void                SDIO_SetSdClkFrequency(uint32_t u32SdClkFreqHz);
 void                SDIO_Reset(void);
 void                SDIO_EnableChipInt(void);
 void                SDIO_DisableChipInt(void);
+
+/* Sleep Mode API Support */
+void SDIO_SaveConfig(void);
+void SDIO_RestoreConfig(void);
 
 /*Low Level Functions*/
 void                SDIO_SendCommand(stc_sdio_cmd_config_t *pstcCmdConfig);

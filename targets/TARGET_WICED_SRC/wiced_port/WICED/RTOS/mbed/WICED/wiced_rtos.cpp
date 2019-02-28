@@ -21,6 +21,8 @@
 #include "mbed.h"
 
 
+InterruptIn *host_wake_pin = NULL;
+
 // worker threads defined here
 wiced_worker_thread_t wiced_hardware_io_worker_thread;
 wiced_worker_thread_t wiced_networking_worker_thread;
@@ -520,6 +522,15 @@ wiced_result_t wiced_time_get_time(wiced_time_t *time)
 {
     *time = timer_event_queue()->tick();
     return WICED_SUCCESS;
+}
+
+extern "C" void mbed_initialize_oob_irq(void (*irq_handler)(void))
+{
+    if(host_wake_pin == NULL)
+    {
+        host_wake_pin = new InterruptIn(CY_WIFI_HOST_WAKE);
+        host_wake_pin->rise(irq_handler);
+    }
 }
 
 /** @} */

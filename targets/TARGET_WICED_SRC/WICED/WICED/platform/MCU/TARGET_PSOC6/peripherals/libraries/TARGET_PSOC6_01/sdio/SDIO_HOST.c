@@ -46,12 +46,59 @@ static uint8_t crcTable[256];
 static uint32_t yCountRemainder;
 static uint32_t yCounts;
 
+/*Global structure to store UDB registers */
+static stc_sdio_backup_regs_t regs;
+
 /* declare a semaphore*/
 #ifdef SEMAPHORE
 static host_semaphore_type_t        sdio_transfer_finished_semaphore;
 #endif
 
 static uint32_t udb_initialized = 0;
+
+#if (defined(MBED_TICKLESS) && DEVICE_SLEEP && DEVICE_LPTICKER)
+cy_stc_syspm_callback_params_t      sdio_pm_callback_params;
+cy_stc_syspm_callback_t             sdio_pm_callback_handler;
+
+/*******************************************************************************
+* Function Name: sdio_pm_callback
+****************************************************************************//**
+*
+* Callback called on Deepsleep entry/exit
+*
+* \note
+* Saves/Restores SDIO UDB registers
+*******************************************************************************/
+static cy_en_syspm_status_t sdio_pm_callback(cy_stc_syspm_callback_params_t *params, cy_en_syspm_callback_mode_t mode)
+{
+	cy_en_syspm_status_t status = CY_SYSPM_FAIL;
+
+    switch (mode) {
+        case CY_SYSPM_CHECK_READY:
+            SDIO_SaveConfig();
+            status = CY_SYSPM_SUCCESS;
+
+       case CY_SYSPM_CHECK_FAIL:
+            SDIO_RestoreConfig();
+            status = CY_SYSPM_SUCCESS;
+            break;
+
+        case CY_SYSPM_BEFORE_TRANSITION:
+            status = CY_SYSPM_SUCCESS;
+            break;
+
+        case CY_SYSPM_AFTER_TRANSITION:
+            SDIO_RestoreConfig();
+            status = CY_SYSPM_SUCCESS;
+            break;
+
+        default:
+            break;
+    }
+
+    return status;
+}
+#endif /* if (defined(MBED_TICKLESS) && DEVICE_SLEEP && DEVICE_LPTICKER) */
 
 /*******************************************************************************
 * Function Name: SDIO_Init
@@ -77,6 +124,16 @@ void SDIO_Init(stc_sdio_irq_cb_t* pfuCb)
     {
         udb_initialized = 1;
         SDIO_Host_Config_UDBs();
+
+#if (defined(MBED_TICKLESS) && DEVICE_SLEEP && DEVICE_LPTICKER)
+        sdio_pm_callback_handler.callback = sdio_pm_callback;
+        sdio_pm_callback_handler.type = CY_SYSPM_DEEPSLEEP;
+        sdio_pm_callback_handler.skipMode = 0;
+        sdio_pm_callback_handler.callbackParams = &sdio_pm_callback_params;
+        if (!Cy_SysPm_RegisterCallback(&sdio_pm_callback_handler)) {
+            while(1);
+        }
+#endif
     }
 
     /*Set Number of Blocks to 1 initially, this will be updated later*/
@@ -1357,6 +1414,39 @@ void SDIO_WRITE_DMA_IRQ(void)
     /*Clear the interrupt*/
     Cy_DMA_Channel_ClearInterrupt(SDIO_HOST_Write_DMA_HW,SDIO_HOST_Write_DMA_DW_CHANNEL);
     yCounts--;
+}
+
+/*******************************************************************************
+* Function Name: SDIO_SaveConfig
+********************************************************************************
+*
+* Saves the user configuration of the SDIO UDB non-retention registers. Call the
+* SDIO_SaveConfig() function before the Cy_SysPm_CpuEnterDeepSleep() function.
+*
+*******************************************************************************/
+void SDIO_SaveConfig(void)
+{
+    regs.CY_SDIO_UDB_WRKMULT_CTL_0 = UDB->WRKMULT.CTL[0];
+    regs.CY_SDIO_UDB_WRKMULT_CTL_1 = UDB->WRKMULT.CTL[1];
+    regs.CY_SDIO_UDB_WRKMULT_CTL_2 = UDB->WRKMULT.CTL[2];
+    regs.CY_SDIO_UDB_WRKMULT_CTL_3 = UDB->WRKMULT.CTL[3];
+}
+
+
+/*******************************************************************************
+* Function Name: SDIO_RestoreConfig
+********************************************************************************
+*
+* Restores the user configuration of the SDIO UDB non-retention registers. Call
+* the SDIO_Wakeup() function after the Cy_SysPm_CpuEnterDeepSleep() function.
+*
+*******************************************************************************/
+void SDIO_RestoreConfig(void)
+{
+    UDB->WRKMULT.CTL[0] = regs.CY_SDIO_UDB_WRKMULT_CTL_0;
+    UDB->WRKMULT.CTL[1] = regs.CY_SDIO_UDB_WRKMULT_CTL_1;
+    UDB->WRKMULT.CTL[2] = regs.CY_SDIO_UDB_WRKMULT_CTL_2;
+    UDB->WRKMULT.CTL[3] = regs.CY_SDIO_UDB_WRKMULT_CTL_3;
 }
 
 /* [] END OF FILE */

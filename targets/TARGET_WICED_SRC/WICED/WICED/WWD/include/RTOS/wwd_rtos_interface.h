@@ -318,6 +318,8 @@ extern wwd_result_t host_rtos_push_to_queue( host_queue_type_t* queue, void* mes
 extern wwd_result_t host_rtos_pop_from_queue( host_queue_type_t* queue, void* message, uint32_t timeout_ms );
 
 extern wwd_result_t host_rtos_deinit_queue( /*@special@*/host_queue_type_t* queue ) /*@releases *queue@*/;
+extern void host_rtos_disable_powersave(void);
+extern void host_rtos_enable_powersave(void);
 
 
 unsigned long host_rtos_get_tickrate( void );

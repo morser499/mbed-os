@@ -185,7 +185,9 @@ resource_result_t resource_free_readonly_buffer( const resource_hnd_t* resource,
 {
     if ( resource->location != RESOURCE_IN_MEMORY )
     {
+#if defined (USES_RESOURCE_FILESYSTEM ) || defined (USES_RESOURCE_GENERIC_FILESYSTEM)
         free( (void*) buffer );
+#endif
     }
     return RESOURCE_SUCCESS;
 }

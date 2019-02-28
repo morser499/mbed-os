@@ -1110,6 +1110,8 @@ wiced_result_t wiced_audio_timer_get_time      ( uint32_t *time_hi, uint32_t *ti
  */
 wiced_result_t wiced_audio_timer_get_resolution( uint32_t audio_sample_rate, uint32_t *ticks_per_sec );
 
+void mbed_initialize_oob_irq(void (*irq_handler)(void));
+
 #ifdef __cplusplus
 } /*extern "C" */
 #endif

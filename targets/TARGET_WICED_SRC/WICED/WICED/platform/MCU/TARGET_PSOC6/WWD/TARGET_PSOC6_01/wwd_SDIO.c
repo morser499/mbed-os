@@ -44,7 +44,9 @@
  ******************************************************/
 
 #define BUS_LEVEL_MAX_RETRIES                (5)
+#ifndef SDIO_ENUMERATION_TIMEOUT_MS
 #define SDIO_ENUMERATION_TIMEOUT_MS          (500)
+#endif
 
 /******************************************************
  *             Structures
@@ -77,9 +79,7 @@ static void sdio_oob_irq_handler( void* arg )
 
 wwd_result_t host_enable_oob_interrupt( void )
 {
-    /* TODO: Setup WiFi OOB interrupt GPIO pin (if required) for PSoC 6 */
-    platform_gpio_init( &wifi_sdio_pins[WWD_PIN_SDIO_OOB_IRQ], INPUT_HIGH_IMPEDANCE );
-    platform_gpio_irq_enable( &wifi_sdio_pins[WWD_PIN_SDIO_OOB_IRQ], IRQ_TRIGGER_RISING_EDGE, sdio_oob_irq_handler, 0 );
+    mbed_initialize_oob_irq(&sdio_oob_irq_handler);
     return WWD_SUCCESS;
 }
 
@@ -96,8 +96,7 @@ wwd_result_t host_platform_bus_init( void )
     stc_sdio_irq_cb_t   irq_cbs;
     uint32_t            flags;
 
-    platform_mcu_powersave_disable();
-
+    host_rtos_disable_powersave();
 #ifdef WICED_WIFI_USE_GPIO_FOR_BOOTSTRAP_0
     /* TODO: Setup GPIO pin (if required) to put WLAN module into SDIO mode on PSoC 6 */
     platform_gpio_init( &wifi_control_pins[WWD_PIN_BOOTSTRAP_0], OUTPUT_PUSH_PULL );
@@ -127,7 +126,7 @@ wwd_result_t host_platform_bus_init( void )
     /* SDIO Host out of reset */
     SDIO_Reset();
 
-    platform_mcu_powersave_enable();
+    host_rtos_enable_powersave();
 
     return result;
 }
@@ -182,8 +181,7 @@ wwd_result_t host_platform_sdio_transfer( wwd_bus_transfer_direction_t direction
         *response = 0;
     }
 
-    platform_mcu_powersave_disable();
-
+    host_rtos_disable_powersave();
 restart:
     ++attempts;
 
@@ -262,21 +260,20 @@ restart:
     result = WWD_SUCCESS;
 
 exit:
-    platform_mcu_powersave_enable();
+    host_rtos_enable_powersave();
     return result;
 }
 
 wwd_result_t host_platform_enable_high_speed_sdio( void )
 {
-    platform_mcu_powersave_disable();
+    host_rtos_disable_powersave();
 
 #if defined (SLOW_SDIO_CLOCK)
     SDIO_SetSdClkFrequency(16666666);
 #else
     SDIO_SetSdClkFrequency(25000000);
 #endif /* defined (SLOW_SDIO_CLOCK) */
-    platform_mcu_powersave_enable();
-
+    host_rtos_enable_powersave();
     return WWD_SUCCESS;
 }
 

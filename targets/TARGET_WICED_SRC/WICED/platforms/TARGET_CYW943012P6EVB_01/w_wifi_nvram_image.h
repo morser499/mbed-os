@@ -104,7 +104,7 @@ static const char wifi_nvram_image[] =
        "femctrlwar=0"                                                       "\x00"
        "use5gpllfor2g=1"                                                    "\x00"
        "pt5db_gaintbl=0"                                                    "\x00"
-
+       "muxenab=0x1"                                                        "\x00"
        "txwbpapden=1"                                                       "\x00"
        "wb_rxattn=0x0303"                                                   "\x00"
        "wb_txattn=0x0202"                                                   "\x00"

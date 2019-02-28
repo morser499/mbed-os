@@ -21,7 +21,7 @@
 #include "rtos.h"
 #include "us_ticker_api.h"
 #include "platform/mbed_wait_api.h"
-
+#include "mbed_power_mgmt.h"
 
 extern "C" wwd_result_t host_rtos_create_thread(
         host_thread_type_t *p,
@@ -198,4 +198,14 @@ extern "C" wwd_result_t host_rtos_deinit_queue(host_queue_type_t *p)
 {
     // do nothing
     return WWD_SUCCESS;
+}
+
+extern "C" void host_rtos_disable_powersave(void)
+{
+    sleep_manager_lock_deep_sleep();
+}
+
+extern "C" void host_rtos_enable_powersave(void)
+{
+    sleep_manager_unlock_deep_sleep();
 }
